@@ -1,36 +1,31 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include "monitor.h"
 
-static const double TEMP_MIN = 20.00;
-static const double TEMP_MAX = 40.00;
-
-void show_menu(void);
-void show_data(const double arr[], size_t len);
-void show_report(const double arr[], size_t len);
-
-int calculate(const double arr[], size_t len, double *pave, size_t *pabnormal);
-int find_max(const double arr[], size_t len, double *pmax);
-int find_min(const double arr[], size_t len, double *pmin);
-void clear_input_line(void);
+static void show_menu(void);
+static void show_data(const double arr[], size_t len);
+static void show_report(const double arr[], size_t len);
 
 int main(void)
 {
     const double tem[] =  { 25.5, 26.1, 27.3, 28.0, 41.2,
                             29.5, 30.1, 19.8, 27.7, 28.4 };
+
     size_t ltem = sizeof tem / sizeof tem[0]; 
+    const double *current = tem;
+    double *generate = NULL;
 
     int num;
-    int n;
     do
     {
         show_menu();
-        n = scanf("%d", &num);
-        if (n == EOF)
-        {
-            break;
-        }
-        clear_input_line();
+        char get[10];
+        fgets(get, 10, stdin);
+        char *end;
+        num = strtol(get, &end, 10);
 
-        if (n != 1)
+        if (isalpha(*end))
         {
             printf("Please enter the right number!\n\n\n");
             continue;
@@ -41,8 +36,32 @@ int main(void)
             printf("Goodbye!\n");
             break;
         }
-        else if (num == 1) { show_data(tem, ltem);}
-        else if (num == 2) { show_report(tem, ltem);}
+        else if (num == 1){ show_data(current, ltem);}
+        else if (num == 2){ show_report(current, ltem);}
+        else if (num == 3){ 
+                            char line[10];
+                            printf("How many samples: ");
+                            fgets(line, 10, stdin);
+                            char *end;
+                            long count = strtol(line, &end, 10);
+                            if (isalpha(*end))
+                            {
+                                printf("warning\n");
+                                continue;
+                            }
+
+                            double *temp = generate_samples(count);
+                            if (temp != NULL)
+                            {
+                               printf("数据更新成功\n\n");
+                               current = generate = temp;
+                               ltem = count;
+                            }
+                            else
+                            {
+                               printf("REEOR\n");
+                            }
+                          }
         else
         {
             printf("Please enter the right number!\n\n\n");
@@ -50,22 +69,24 @@ int main(void)
         }
     } while (1);
 
+    free(generate);
     return 0;
 }
 
 
 //显示主菜单
-void show_menu(void)
+static void show_menu(void)
 {
-    printf("=== Mini Device Monitor v0.2 ===\n\n");
+    printf("\033[32m=== Mini Device Monitor v0.2 ===\n\n");
     printf("1. View temperature data\n");
     printf("2. Analyze temperature data\n");
+    printf("3. 生成新数据\n");
     printf("0. Exit\n\n");
-    printf("Select > ");
+    printf("Select >\033[0m ");
 }
 
 //显示当前的数据
-void show_data(const double arr[], size_t len)
+static void show_data(const double arr[], size_t len)
 {
     if (len == 0 || arr == NULL)
     {
@@ -81,7 +102,7 @@ void show_data(const double arr[], size_t len)
 }
 
 //显示数据的个数，平均值，最大值，最小值，错误个数
-void show_report(const double arr[], size_t len)
+static void show_report(const double arr[], size_t len)
 {
     double ave;
     size_t abnormal;
@@ -104,77 +125,6 @@ void show_report(const double arr[], size_t len)
     else
     {
         printf("Error: Unable to analyze temperature data.\n");
-    }
-}
-
-//计算数据的平均值和超出范围的值的个数,失败返回0，成功返回1
-int calculate(const double arr[], size_t len, double *pave, size_t *pabnormal)
-{
-    if (len == 0 || arr == NULL || pave == NULL || pabnormal == NULL)
-    {
-        return 0;
-    }
-
-    size_t count_ab = 0;
-    double sum = 0;
-    for (size_t i = 0; i < len; i++)
-    {
-        if (arr[i] < TEMP_MIN || arr[i] > TEMP_MAX)
-        {
-            count_ab++;
-        }
-        sum += arr[i];
-    }
-    *pave = sum / (double)len;
-    *pabnormal = count_ab;
-    return 1;
-}
-
-//找出数据最大值,失败返回0，成功返回1
-int find_max(const double arr[], size_t len, double *pmax)
-{
-    if (len == 0 || arr == NULL || pmax == NULL)
-    {
-        return 0;
-    }
-
-    double temp = arr[0];
-    for (size_t i = 1; i < len; i++)
-    {
-        if (temp < arr[i]){
-            temp = arr[i];
-        }
-    }
-    *pmax = temp;
-    return 1;
-}
-
-//找出数据最小值,失败返回0，成功返回1
-int find_min(const double arr[], size_t len, double *pmin)
-{
-    if (len == 0 || arr == NULL || pmin == NULL)
-    {
-        return 0;
-    }
-
-    double temp = arr[0];
-    for (size_t i = 1; i < len; i++)
-    {
-        if (temp > arr[i]){
-            temp = arr[i];
-        }
-    }
-    *pmin = temp;
-    return 1;
-}
-
-//清空缓冲区
-void clear_input_line(void)
-{
-    int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF)
-    {
-
     }
 }
 
