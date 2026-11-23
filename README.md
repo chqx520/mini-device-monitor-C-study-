@@ -26,7 +26,7 @@ Or: I'm learning C, and I want to improve my programming skills by building prac
 Compile the program with Clang:
 
 ```bash
-clang main.c -o monitor
+clang -std=c17 -Wall -Wextra -Wpedantic main.c monitor.c -o monitor
 ```
 
 Run the program:
@@ -34,13 +34,33 @@ Run the program:
 ```bash
 ./monitor
 ```
+
+## How to run the test
+
+Compile the test with Clang:
+
+```bash
+clang -std=c17 -Wall -Wextra -Wpedantic test_monitor.c monitor.c -o test_monitor
+```
+
+Run the test:
+
+```bash
+./test-monitor
+```
+
 ## Version
 ### Current version
-    v0.2
+    v0.3
 ### Future Updates
     To be determined.
 
 ## Version History
+### v0.3
+- Split the program into `main.c`, `monitor.c`, and `monitor.h`.
+- Added local unit tests using `assert`.
+- Added a menu option to generate a chosen number of simulated temperature readings.
+- Improved menu input validation to reject entries such as `2abc`.
 ### v0.2
 - Added an interactive menu.
 - Added temperature data display.
